@@ -1,0 +1,355 @@
+/* ── Base card ─────────────────────────── */
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+  animation: cardIn 0.25s ease;
+  overflow: hidden;
+}
+
+.card.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(0.2);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--habit-color);
+  border-radius: 12px 0 0 12px;
+  opacity: 0.8;
+  transition: all 0.35s ease;
+  pointer-events: none;
+}
+
+.card.done {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.09);
+}
+
+.card.done::before {
+  width: 100%;
+  background: linear-gradient(90deg, var(--habit-color) 0%, transparent 55%);
+  opacity: 0.08;
+  border-radius: 12px;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card:hover {
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* ── Actions (edit + delete) ──────────── */
+.cardActions {
+  position: absolute;
+  top: 0.6rem;
+  right: 4.5rem;
+  display: flex;
+  gap: 0.2rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
+}
+
+.card:hover .cardActions { opacity: 1; }
+
+@media (max-width: 640px) {
+  .cardActions { opacity: 0.4; }
+}
+
+.editBtn, .deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1;
+}
+
+.editBtn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); }
+.deleteBtn:hover { background: rgba(239,68,68,0.1); color: #f87171; }
+
+.deleteBtn.confirm {
+  background: rgba(239,68,68,0.15);
+  color: #f87171;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/* ── Check button ──────────────────────── */
+.checkBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--habit-color);
+  background: transparent;
+  color: var(--habit-color);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.checkBtn:hover { opacity: 0.8; }
+
+.checkBtn.checked {
+  background: var(--habit-color);
+  color: #fff;
+  animation: pop 0.25s ease;
+}
+
+.checkBtn.undoHover {
+  background: rgba(239,68,68,0.15);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.checkBtnLg {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.85); }
+  55% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ── Week grid ─────────────────────────── */
+.week {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+}
+
+.dayItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dayDot {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.07);
+  transition: background 0.25s;
+}
+
+.dayDot.dayDone {
+  transform: none;
+}
+
+.dayLabel {
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.22);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ── Badges ──────────────────────────── */
+.badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.badge {
+  font-size: 0.68rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.xpBadge {
+  background: rgba(245,158,11,0.08);
+  color: #fbbf24;
+  border-color: rgba(245,158,11,0.15);
+  font-weight: 600;
+}
+
+/* ────────────────────────────────────── */
+/* ── SMALL card ─────────────────────── */
+/* ────────────────────────────────────── */
+.cardSmall {
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.smallLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.emojiSm { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+
+.smallInfo { min-width: 0; }
+
+.nameSm {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.18rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smallMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.timePill {
+  font-size: 0.63rem;
+  padding: 0.08rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.4);
+}
+
+.xpPill {
+  background: rgba(245,158,11,0.08);
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.streakSm {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.35);
+}
+
+.smallRight {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* ────────────────────────────────────── */
+/* ── MEDIUM card ────────────────────── */
+/* ────────────────────────────────────── */
+.cardMedium { padding: 1rem 1rem 0.9rem; }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.emoji { font-size: 1.5rem; line-height: 1; }
+
+.name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.1rem 0;
+}
+
+.streak {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ────────────────────────────────────── */
+/* ── LARGE card ─────────────────────── */
+/* ────────────────────────────────────── */
+.cardLarge { padding: 1.25rem 1.1rem 1.1rem; }
+
+.largeTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+.emojiLg { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+
+.largeInfo { flex: 1; }
+
+.nameLg {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.2rem 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Meta blocks */
+.largeMeta {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.timeBlock {
+  flex: 1;
+  min-width: 60px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.timeBlockLabel {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.25);
+}
+
+.timeBlockValue {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.xpValue { color: #fbbf24; }

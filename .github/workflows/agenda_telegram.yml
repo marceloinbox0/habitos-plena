@@ -1,0 +1,32 @@
+name: 📅 Notificação Agenda Telegram
+
+on:
+  schedule:
+    # Roda às 23h UTC = 20h horário de Brasília (UTC-3)
+    - cron: '0 23 * * *'
+  workflow_dispatch: # Permite rodar manualmente para testar
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependências
+        run: |
+          cd assistente-bot
+          pip install -r requirements.txt
+
+      - name: 🚀 Rodar notificação
+        env:
+          GOOGLE_TOKEN_JSON: ${{ secrets.GOOGLE_TOKEN_JSON }}
+        run: |
+          cd assistente-bot
+          python check_agenda.py

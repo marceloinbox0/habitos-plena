@@ -1,0 +1,197 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Chart ────────────────────────────── */
+.chartContainer {
+  width: 100%;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
+}
+
+.line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.area {
+  fill: url(#chartGradient);
+}
+
+.point {
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.axisText {
+  font-size: 8px;
+  font-weight: 600;
+  fill: var(--text-muted);
+}
+
+.pointText {
+  font-size: 8px;
+  font-weight: 800;
+  fill: var(--text);
+}
+
+/* ── Calendar ─────────────────────────── */
+.calendar {
+  width: 100%;
+}
+
+.calendarHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.75rem;
+}
+
+.calDayLabel {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calDay {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.calToday {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.calWarning {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.calSuccess {
+  background: rgba(34, 197, 94, 0.35);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.calDayNum {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.calDayEmpty {
+  aspect-ratio: 1;
+}
+
+.calPercentBar {
+  width: 70%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  margin-top: 0.35rem;
+  overflow: hidden;
+}
+
+.calPercentFill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ── Coach Section ───────────────────── */
+.coachCard {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.coachIcon {
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+}
+
+.coachContent {
+  flex: 1;
+}
+
+.coachAdvice {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+}
+
+.quoteBox {
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.quoteText {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
+}
+
+.quoteAuthor {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
