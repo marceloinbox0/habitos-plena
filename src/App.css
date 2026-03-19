@@ -97,9 +97,11 @@ body {
   flex-shrink: 0;
 }
 
-.add-btn:hover {
-  opacity: 0.88;
-  transform: scale(1.05);
+@media (hover: hover) {
+  .add-btn:hover {
+    opacity: 0.88;
+    transform: scale(1.05);
+  }
 }
 
 .add-btn:active {
@@ -121,9 +123,11 @@ body {
   transition: border-color 0.15s, color 0.15s;
 }
 
-.signout-btn:hover {
-  border-color: var(--border-hover);
-  color: var(--text);
+@media (hover: hover) {
+  .signout-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
 }
 
 .view-toggle {
@@ -147,9 +151,11 @@ body {
   color: var(--accent);
 }
 
-.view-toggle:hover:not(.active) {
-  border-color: var(--border-hover);
-  color: var(--text);
+@media (hover: hover) {
+  .view-toggle:hover:not(.active) {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
 }
 
 /* ── Progress bar ──────────────────────── */
@@ -292,8 +298,10 @@ body {
   transition: opacity 0.15s;
 }
 
-.empty-btn:hover {
-  opacity: 0.88;
+@media (hover: hover) {
+  .empty-btn:hover {
+    opacity: 0.88;
+  }
 }
 
 /* ── Scrollbar ──────────────────────── */
@@ -365,9 +373,11 @@ body {
   width: 100%;
 }
 
-.milestone-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+@media (hover: hover) {
+  .milestone-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
 }
 
 @keyframes scaleIn {
@@ -403,11 +413,13 @@ body {
   gap: 0.75rem;
 }
 
-.finalize-btn:hover:not(:disabled) {
-  background: var(--accent);
-  color: #fff;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+@media (hover: hover) {
+  .finalize-btn:hover:not(:disabled) {
+    background: var(--accent);
+    color: #fff;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+  }
 }
 
 .finalize-btn.finalized {

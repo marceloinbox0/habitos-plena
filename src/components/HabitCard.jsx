@@ -53,17 +53,14 @@ function Badges({ habit }) {
 }
 
 function CheckButton({ done, onToggle, large }) {
-  const [hovering, setHovering] = useState(false)
   return (
     <button
-      className={`${styles.checkBtn} ${done ? styles.checked : ''} ${large ? styles.checkBtnLg : ''} ${done && hovering ? styles.undoHover : ''}`}
+      className={`${styles.checkBtn} ${done ? styles.checked : ''} ${large ? styles.checkBtnLg : ''}`}
       onClick={() => onToggle()}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
       aria-label={done ? 'Desfazer' : 'Marcar como feito'}
       title={done ? 'Clique para desfazer' : 'Marcar como feito'}
     >
-      {done ? (hovering ? '↩' : '✓') : ''}
+      {done ? '✓' : ''}
     </button>
   )
 }
