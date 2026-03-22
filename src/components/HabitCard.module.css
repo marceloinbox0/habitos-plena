@@ -1,6 +1,6 @@
 .card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   position: relative;
   transition: border-color 0.2s, background 0.2s;
@@ -31,8 +31,8 @@
 }
 
 .card.done {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.09);
+  background: var(--card-bg-done);
+  border-color: var(--card-bg-done-border);
 }
 
 .card.done::before {
@@ -49,7 +49,7 @@
 
 @media (hover: hover) {
   .card:hover {
-    border-color: rgba(255,255,255,0.1);
+    border-color: var(--card-border-hover);
   }
 }
 
@@ -78,7 +78,7 @@
   border: none;
   cursor: pointer;
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.4);
+  color: var(--card-text-secondary);
   padding: 0.15rem 0.3rem;
   border-radius: 4px;
   transition: background 0.12s, color 0.12s;
@@ -86,7 +86,7 @@
 }
 
 @media (hover: hover) {
-  .editBtn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); }
+  .editBtn:hover { background: var(--card-btn-hover-bg); color: var(--card-btn-hover-text); }
 }
 @media (hover: hover) {
   .deleteBtn:hover { background: rgba(239,68,68,0.1); color: #f87171; }
@@ -125,7 +125,7 @@
 
 .checkBtn.checked {
   background: var(--habit-color);
-  color: #fff;
+  color: #fff; /* Keeping checkmark white on colored background */
   animation: pop 0.25s ease;
 }
 
@@ -161,7 +161,7 @@
   width: 100%;
   height: 4px;
   border-radius: 2px;
-  background: rgba(255,255,255,0.07);
+  background: var(--card-dot-bg);
   transition: background 0.25s;
 }
 
@@ -171,7 +171,7 @@
 
 .dayLabel {
   font-size: 0.58rem;
-  color: rgba(255,255,255,0.22);
+  color: var(--card-text-tertiary);
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -188,15 +188,15 @@
   font-size: 0.68rem;
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.45);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--card-badge-bg);
+  color: var(--card-text-secondary2);
+  border: 1px solid var(--card-badge-border);
 }
 
 .xpBadge {
-  background: rgba(245,158,11,0.08);
-  color: #fbbf24;
-  border-color: rgba(245,158,11,0.15);
+  background: var(--card-xp-bg);
+  color: var(--card-xp-text);
+  border-color: var(--card-xp-border);
   font-weight: 600;
 }
 
@@ -226,7 +226,7 @@
 .nameSm {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--card-text-primary);
   margin: 0 0 0.18rem 0;
   white-space: nowrap;
   overflow: hidden;
@@ -244,19 +244,19 @@
   font-size: 0.63rem;
   padding: 0.08rem 0.35rem;
   border-radius: 4px;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.4);
+  background: var(--card-badge-bg);
+  color: var(--card-text-secondary);
 }
 
 .xpPill {
-  background: rgba(245,158,11,0.08);
-  color: #fbbf24;
+  background: var(--card-xp-bg);
+  color: var(--card-xp-text);
   font-weight: 600;
 }
 
 .streakSm {
   font-size: 0.65rem;
-  color: rgba(255,255,255,0.35);
+  color: var(--card-text-tertiary2);
 }
 
 .smallRight {
@@ -289,13 +289,13 @@
 .name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--card-text-primary);
   margin: 0 0 0.1rem 0;
 }
 
 .streak {
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.35);
+  color: var(--card-text-tertiary2);
 }
 
 /* ────────────────────────────────────── */
@@ -317,7 +317,7 @@
 .nameLg {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--card-text-primary);
   margin: 0 0 0.2rem 0;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -334,8 +334,8 @@
 .timeBlock {
   flex: 1;
   min-width: 60px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card-badge-bg);
+  border: 1px solid var(--card-badge-border);
   border-radius: 8px;
   padding: 0.5rem 0.65rem;
   display: flex;
@@ -348,13 +348,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.25);
+  color: var(--card-text-tertiary);
 }
 
 .timeBlockValue {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--card-text-primary);
 }
 
-.xpValue { color: #fbbf24; }
+.xpValue { color: var(--card-xp-text); }

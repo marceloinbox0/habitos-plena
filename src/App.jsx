@@ -5,6 +5,7 @@ import HabitCard from './components/HabitCard'
 import HabitForm from './components/HabitForm'
 import AuthPage from './components/Auth/AuthPage'
 import HistoryView from './components/History/HistoryView'
+import SettingsModal from './components/Settings/SettingsModal'
 import './App.css'
 
 function getTodayLabel() {
@@ -23,14 +24,57 @@ function LoadingScreen() {
 }
 
 export default function App() {
+  const [settings, setSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vidaplena_settings')
+      return saved ? JSON.parse(saved) : { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: [] }
+    } catch {
+      return { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: [] }
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('vidaplena_settings', JSON.stringify(settings))
+    const root = document.documentElement
+    
+    if (settings.theme === 'light') {
+      root.setAttribute('data-theme', 'light')
+    } else if (settings.theme === 'dark') {
+      root.removeAttribute('data-theme')
+    } else {
+      // system
+      const isSysDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (isSysDark) {
+        root.removeAttribute('data-theme')
+      } else {
+        root.setAttribute('data-theme', 'light')
+      }
+    }
+  }, [settings])
+
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const { 
-    habits, loading: habitsLoading, addHabit, editHabit, deleteHabit, toggleToday, 
+    habits, loading: habitsLoading, addHabit, editHabit, deleteHabit, archiveHabit, unarchiveHabit, toggleToday, 
     todayXP, totalDailyXP, dailyProgressXP, habitsDoneCount, performanceLevel, consistencyScore, 
     completions, summaries, finalizeDay, getTodayKey, isTodayFinalized 
-  } = useHabits(user?.id)
+  } = useHabits(user?.id, settings.daysOff, settings.dayOffHabits)
+
+  const isTodayDayOff = (() => {
+    const d = new Date()
+    const dayOfWeek = d.getDay()
+    return (dayOfWeek === 6 && settings.daysOff?.saturday) || (dayOfWeek === 0 && settings.daysOff?.sunday)
+  })()
+
+  const habitsToRender = habits.filter(h => {
+    if (h.archived) return false
+    if (isTodayDayOff) {
+      return settings.dayOffHabits?.includes(h.id)
+    }
+    return true
+  })
 
   const [view, setView] = useState('today') // 'today' | 'history'
+  const [showSettings, setShowSettings] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingHabit, setEditingHabit] = useState(null)
   const [showMilestone, setShowMilestone] = useState(false)
@@ -75,7 +119,7 @@ export default function App() {
   if (!user) return <AuthPage signIn={signIn} signUp={signUp} />
 
   return (
-    <div className={`app ${dailyProgressXP >= 90 ? 'success-bg' : ''}`}>
+    <div className={`app ${dailyProgressXP >= 90 && view === 'today' ? 'success-bg' : ''}`}>
       <header className="header">
         <div className="header-top">
           <div>
@@ -89,6 +133,13 @@ export default function App() {
               title={view === 'today' ? 'Ver Histórico' : 'Ver Hoje'}
             >
               {view === 'today' ? '📊' : '📅'}
+            </button>
+            <button 
+              className="view-toggle"
+              onClick={() => setShowSettings(true)}
+              title="Configurações"
+            >
+              ⚙️
             </button>
             <button
               className="add-btn"
@@ -141,23 +192,38 @@ export default function App() {
               <div className="empty-icon" style={{ animation: 'float 1s ease-in-out infinite' }}>⏳</div>
               <p>Carregando seus hábitos...</p>
             </div>
-          ) : habits.length === 0 ? (
+          ) : habitsToRender.length === 0 ? (
             <div className="empty">
               <div className="empty-icon">🌱</div>
-              <h2>Comece sua jornada</h2>
-              <p>Adicione seu primeiro hábito e acompanhe seu progresso diário.</p>
-              <button className="empty-btn" onClick={() => { setEditingHabit(null); setShowForm(true) }}>
-                + Adicionar hábito
-              </button>
+              {isTodayDayOff ? (
+                <>
+                  <h2>Hoje é seu dia de folga, descanse.</h2>
+                  <p>Você não selecionou nenhum hábito obrigatório para aparecer hoje.</p>
+                </>
+              ) : (
+                <>
+                  <h2>Comece sua jornada</h2>
+                  <p>Adicione seu primeiro hábito e acompanhe seu progresso diário.</p>
+                  <button className="empty-btn" onClick={() => { setEditingHabit(null); setShowForm(true) }}>
+                    + Adicionar hábito
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <div className="habit-list">
-              {habits.map((habit) => (
+              {isTodayDayOff && (
+                 <div style={{ textAlign: 'center', padding: '0.85rem', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--text)', fontSize: '0.9rem', marginBottom: '0.4rem' }}>
+                   🏖️ <strong style={{ color: 'var(--accent)' }}>Hoje é seu dia de folga, descanse.</strong>
+                 </div>
+              )}
+              {habitsToRender.map((habit) => (
                 <HabitCard
                   key={habit.id}
                   habit={habit}
                   onToggle={isTodayFinalized ? () => {} : toggleToday}
                   onDelete={isTodayFinalized ? null : deleteHabit}
+                  onArchive={isTodayFinalized ? null : archiveHabit}
                   onEdit={isTodayFinalized ? null : openEdit}
                   disabled={isTodayFinalized}
                 />
@@ -187,7 +253,13 @@ export default function App() {
             </div>
           )
         ) : (
-          <HistoryView habits={habits} completions={completions} summaries={summaries} />
+          <HistoryView 
+            habits={habits} 
+            completions={completions} 
+            summaries={summaries} 
+            daysOff={settings.daysOff}
+            dayOffHabits={settings.dayOffHabits}
+          />
         )}
       </main>
 
@@ -239,6 +311,16 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+      {showSettings && (
+        <SettingsModal
+          settings={settings}
+          onClose={() => setShowSettings(false)}
+          onSave={setSettings}
+          habits={habits}
+          onUnarchive={unarchiveHabit}
+          onDelete={deleteHabit}
+        />
       )}
     </div>
   )

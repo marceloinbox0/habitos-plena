@@ -65,8 +65,9 @@ function CheckButton({ done, onToggle, large }) {
   )
 }
 
-export default function HabitCard({ habit, onToggle, onDelete, onEdit, disabled }) {
+export default function HabitCard({ habit, onToggle, onDelete, onArchive, onEdit, disabled }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmArchive, setConfirmArchive] = useState(false)
   const size = getCardSize(habit.timeDuration)
 
   const handleDelete = () => {
@@ -75,6 +76,15 @@ export default function HabitCard({ habit, onToggle, onDelete, onEdit, disabled 
     } else {
       setConfirmDelete(true)
       setTimeout(() => setConfirmDelete(false), 3000)
+    }
+  }
+
+  const handleArchive = () => {
+    if (confirmArchive) {
+      onArchive(habit.id)
+    } else {
+      setConfirmArchive(true)
+      setTimeout(() => setConfirmArchive(false), 3000)
     }
   }
 
@@ -103,9 +113,13 @@ export default function HabitCard({ habit, onToggle, onDelete, onEdit, disabled 
           <div className={styles.cardActions}>
             <button className={styles.editBtn} onClick={() => onEdit(habit)} title="Editar">✏️</button>
             <button
+              className={`${styles.deleteBtn} ${confirmArchive ? styles.confirm : ''}`}
+              onClick={handleArchive}
+            >{confirmArchive ? '?' : '📦'}</button>
+            <button
               className={`${styles.deleteBtn} ${confirmDelete ? styles.confirm : ''}`}
               onClick={handleDelete}
-            >{confirmDelete ? '?' : '🗑️'}</button>
+            >{confirmDelete ? 'x' : '🗑️'}</button>
           </div>
           <CheckButton done={habit.doneToday} onToggle={() => !disabled && onToggle(habit.id)} />
         </div>
@@ -123,9 +137,13 @@ export default function HabitCard({ habit, onToggle, onDelete, onEdit, disabled 
         <div className={styles.cardActions}>
           <button className={styles.editBtn} onClick={() => onEdit(habit)} title="Editar">✏️</button>
           <button
+            className={`${styles.deleteBtn} ${confirmArchive ? styles.confirm : ''}`}
+            onClick={handleArchive}
+          >{confirmArchive ? 'Confirmar?' : '📦'}</button>
+          <button
             className={`${styles.deleteBtn} ${confirmDelete ? styles.confirm : ''}`}
             onClick={handleDelete}
-          >{confirmDelete ? 'Confirmar?' : '🗑️'}</button>
+          >{confirmDelete ? 'Ocultar?' : '🗑️'}</button>
         </div>
 
         <div className={styles.top}>
@@ -153,9 +171,13 @@ export default function HabitCard({ habit, onToggle, onDelete, onEdit, disabled 
       <div className={styles.cardActions}>
         <button className={styles.editBtn} onClick={() => onEdit(habit)} title="Editar">✏️</button>
         <button
+          className={`${styles.deleteBtn} ${confirmArchive ? styles.confirm : ''}`}
+          onClick={handleArchive}
+        >{confirmArchive ? 'Confirmar?' : '📦'}</button>
+        <button
           className={`${styles.deleteBtn} ${confirmDelete ? styles.confirm : ''}`}
           onClick={handleDelete}
-        >{confirmDelete ? 'Confirmar?' : '🗑️'}</button>
+        >{confirmDelete ? 'Ocultar?' : '🗑️'}</button>
       </div>
 
       <div className={styles.largeTop}>

@@ -13,7 +13,7 @@ function getTodayKey() {
   return formatDateLocal(new Date())
 }
 
-function calculateStreak(completedDates) {
+function calculateStreak(completedDates, daysOff) {
   let streak = 0
   const today = new Date()
   for (let i = 0; i < 365; i++) {
@@ -23,6 +23,9 @@ function calculateStreak(completedDates) {
     if (completedDates.has(key)) {
       streak++
     } else {
+      const dayOfWeek = d.getDay()
+      const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+      if (isDayOff) continue // Skip day off, don't break streak
       break
     }
   }
@@ -60,7 +63,7 @@ function computeDuration(timeStart, timeEnd) {
   return diff > 0 ? diff : null
 }
 
-export function useHabits(userId) {
+export function useHabits(userId, daysOff = { saturday: false, sunday: false }, dayOffHabits = []) {
   const [habits, setHabits] = useState([])
   const [completions, setCompletions] = useState([]) // flat array of all completion rows
   const [summaries, setSummaries] = useState([]) // daily snapshots
@@ -138,6 +141,21 @@ export function useHabits(userId) {
     }
   }
 
+  const archiveHabit = async (id) => {
+    const today = new Date().toISOString()
+    const { data, error } = await supabase.from('habits').update({ archived: true, archived_at: today }).eq('id', id).select().single()
+    if (!error && data) {
+      setHabits((prev) => prev.map((h) => h.id === id ? data : h))
+    }
+  }
+
+  const unarchiveHabit = async (id) => {
+    const { data, error } = await supabase.from('habits').update({ archived: false, archived_at: null }).eq('id', id).select().single()
+    if (!error && data) {
+      setHabits((prev) => prev.map((h) => h.id === id ? data : h))
+    }
+  }
+
   const toggleToday = async (id) => {
     const today = getTodayKey()
     const habit = habits.find((h) => h.id === id)
@@ -164,9 +182,21 @@ export function useHabits(userId) {
   }
 
   const finalizeDay = async (dateStr) => {
+    const d = new Date(dateStr + "T12:00:00")
+    const dayOfWeek = d.getDay()
+    const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+
     const habitsOnDay = habits.filter(h => {
-      if (!h.created_at) return true
-      return formatDateLocal(h.created_at) <= dateStr
+      // Se o hábito foi criado depois dessa data
+      if (h.created_at && formatDateLocal(h.created_at) > dateStr) return false
+      
+      // Se o hábito já estava arquivado nesse dia
+      if (h.archived && h.archived_at && formatDateLocal(h.archived_at) <= dateStr) return false
+      
+      // Se é dia de folga e não foi selecionado
+      if (isDayOff && !dayOffHabits.includes(h.id)) return false
+      
+      return true
     })
     
     const xpTotal = habitsOnDay.reduce((sum, h) => sum + (h.xp || 10), 0)
@@ -222,13 +252,24 @@ export function useHabits(userId) {
   }
 
   // Barra 1: Progresso do Dia (XP Concluído / XP Total do Dia)
-  const totalDailyXP = habits.reduce((sum, h) => sum + (h.xp || 10), 0)
+  const isTodayDayOff = (() => {
+    const d = new Date()
+    const dayOfWeek = d.getDay()
+    return (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+  })()
+
+  const activeHabits = habits.filter(h => !h.archived)
+  const applicableHabitsToday = isTodayDayOff 
+    ? activeHabits.filter(h => dayOffHabits.includes(h.id))
+    : activeHabits;
+
+  const totalDailyXP = applicableHabitsToday.reduce((sum, h) => sum + (h.xp || 10), 0)
   const todayXP = completions
     .filter((c) => c.completed_date === getTodayKey())
     .reduce((sum, c) => sum + (c.xp_earned || 0), 0)
   
-  const dailyProgressXP = totalDailyXP > 0 ? (todayXP / totalDailyXP) * 100 : 0
-  const habitsDoneCount = habits.filter(h => completionMap[h.id]?.has(getTodayKey())).length
+  const dailyProgressXP = totalDailyXP > 0 ? (todayXP / totalDailyXP) * 100 : (isTodayDayOff && applicableHabitsToday.length === 0 ? 100 : 0)
+  const habitsDoneCount = applicableHabitsToday.filter(h => completionMap[h.id]?.has(getTodayKey())).length
 
   // Barra 2: Nível de Constância (Foco em Performance Recente - últimos 14 dias)
   const calculateConsistencyLevel = () => {
@@ -245,23 +286,46 @@ export function useHabits(userId) {
 
     last14Days.forEach((date, index) => {
       // Peso maior para dias mais recentes (dia atual tem peso 14, 14 dias atrás tem peso 1)
-      const weight = 14 - index
-      totalWeight += weight
+      let weight = 14 - index
+
+      const d = new Date(date + "T12:00:00") // avoid timezone issues for local date
+      const dayOfWeek = d.getDay()
+      const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
 
       const habitsOnDay = habits.filter(h => {
-        if (!h.created_at) return true
-        return formatDateLocal(h.created_at) <= date
+        // Se o hábito foi criado depois dessa data, ele não existia ainda
+        if (h.created_at && formatDateLocal(h.created_at) > date) return false
+        
+        // Se o hábito está arquivado E a data de arquivamento for menor ou igual à data que estamos verificando
+        // Significa que no final desse dia o hábito já estava arquivado, então não deve ser cobrado na meta do dia 
+        if (h.archived && h.archived_at) {
+          const archivedDateStr = formatDateLocal(h.archived_at)
+          if (archivedDateStr <= date) return false
+        }
+
+        // Se é um dia de folga, cobramos apenas os hábitos selecionados para a rotina de folga (se houver seleção)
+        if (isDayOff) {
+          if (!dayOffHabits.includes(h.id)) return false
+        }
+        
+        return true
       })
       const xpExpected = habitsOnDay.reduce((sum, h) => sum + (h.xp || 10), 0)
       const xpEarned = completions
         .filter(c => c.completed_date === date)
         .reduce((sum, c) => sum + (c.xp_earned || 0), 0)
 
-      const dayConsistency = xpExpected > 0 ? (xpEarned / xpExpected) : 0
+      if (xpExpected === 0) {
+        // Se não houver hábitos esperados (ex: dia de folga sem hábitos configurados)
+        return // preserve score, no penalty
+      }
+
+      totalWeight += weight
+      const dayConsistency = (xpEarned / xpExpected)
       weightedConsistency += dayConsistency * weight
     })
 
-    return (weightedConsistency / totalWeight) * 100
+    return totalWeight > 0 ? (weightedConsistency / totalWeight) * 100 : 100
   }
 
   const consistencyScore = calculateConsistencyLevel()
@@ -289,7 +353,7 @@ export function useHabits(userId) {
       timeStart: h.time_start,
       timeEnd: h.time_end,
       doneToday: datesSet.has(getTodayKey()),
-      streak: calculateStreak(datesSet),
+      streak: calculateStreak(datesSet, daysOff),
       weekDays: weekDays.map((day) => ({ key: day, done: datesSet.has(day) })),
       timeDuration: computeDuration(h.time_start, h.time_end),
     }
@@ -309,6 +373,8 @@ export function useHabits(userId) {
     addHabit,
     editHabit,
     deleteHabit,
+    archiveHabit,
+    unarchiveHabit,
     toggleToday,
     todayXP,
     totalDailyXP,

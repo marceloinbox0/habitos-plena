@@ -18,7 +18,26 @@ function getDayLabel(dateStr) {
   }
 }
 
-function getDailyStats(habits = [], completions = [], summaries = [], daysCount = 7) {
+function getExpectedHabitsForDate(dateStr, habits, daysOff, dayOffHabits) {
+  const d = new Date(dateStr + "T12:00:00")
+  const dayOfWeek = d.getDay()
+  const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+
+  return (habits || []).filter(h => {
+    // Se o hábito foi criado depois dessa data
+    if (h.created_at && formatDateLocal(h.created_at) > dateStr) return false
+    
+    // Se o hábito já estava arquivado
+    if (h.archived && h.archived_at && formatDateLocal(h.archived_at) <= dateStr) return false
+    
+    // Se é dia de folga e não foi selecionado
+    if (isDayOff && dayOffHabits && !dayOffHabits.includes(h.id)) return false
+    
+    return true
+  })
+}
+
+function getDailyStats(habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [], daysCount = 7) {
   const stats = []
   const today = new Date()
   
@@ -40,17 +59,17 @@ function getDailyStats(habits = [], completions = [], summaries = [], daysCount 
       percentage = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : 0
     } else {
       // Cálculo dinâmico se não houver snapshot
-      const existingHabits = (habits || []).filter(h => {
-        if (!h.created_at) return true
-        return formatDateLocal(h.created_at) <= dateStr
-      })
+      const existingHabits = getExpectedHabitsForDate(dateStr, habits, daysOff, dayOffHabits)
       
       totalXPExpected = existingHabits.reduce((acc, h) => acc + (Number(h.xp) || 10), 0)
       totalXPEarned = (completions || [])
         .filter(c => c.completed_date === dateStr)
         .reduce((acc, c) => acc + (Number(c.xp_earned) || 0), 0)
       
-      percentage = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : 0
+      const dayOfWeek = new Date(dateStr + "T12:00:00").getDay()
+      const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+
+      percentage = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff ? 100 : 0)
     }
       
     stats.push({
@@ -111,7 +130,7 @@ function LineChart({ data = [] }) {
   )
 }
 
-function Calendar({ habits = [], completions = [], summaries = [] }) {
+function Calendar({ habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [] }) {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth()
@@ -148,17 +167,17 @@ function Calendar({ habits = [], completions = [], summaries = [] }) {
             percent = saved.total_xp > 0 ? Math.round((saved.completed_xp / saved.total_xp) * 100) : 0
             hasData = true
           } else {
-            const existingOnDay = (habits || []).filter(h => {
-              if (!h.created_at) return true
-              return formatDateLocal(h.created_at) <= dateStr
-            })
+            const existingOnDay = getExpectedHabitsForDate(dateStr, habits, daysOff, dayOffHabits)
             const totalXPExpected = existingOnDay.reduce((acc, h) => acc + (Number(h.xp) || 10), 0)
             const totalXPEarned = (completions || [])
               .filter(c => c.completed_date === dateStr)
               .reduce((acc, c) => acc + (Number(c.xp_earned) || 0), 0)
             
-            percent = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : 0
-            hasData = totalXPExpected > 0
+            const dayOfWeek = new Date(dateStr + "T12:00:00").getDay()
+            const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
+
+            percent = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff ? 100 : 0)
+            hasData = totalXPExpected > 0 || isDayOff
           }
 
           const showPercent = dateStr <= todayStr && day >= 15
@@ -264,8 +283,8 @@ function CoachSection({ habits = [], completions = [], summaries = [], last7Days
   )
 }
 
-export default function HistoryView({ habits = [], completions = [], summaries = [] }) {
-  const last7Days = useMemo(() => getDailyStats(habits, completions, summaries, 7), [habits, completions, summaries])
+export default function HistoryView({ habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [] }) {
+  const last7Days = useMemo(() => getDailyStats(habits, completions, summaries, daysOff, dayOffHabits, 7), [habits, completions, summaries, daysOff, dayOffHabits])
 
   return (
     <div className={styles.container}>
@@ -281,7 +300,7 @@ export default function HistoryView({ habits = [], completions = [], summaries =
 
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>Calendário Mensal</h3>
-        <Calendar habits={habits} completions={completions} summaries={summaries} />
+        <Calendar habits={habits} completions={completions} summaries={summaries} daysOff={daysOff} dayOffHabits={dayOffHabits} />
       </section>
     </div>
   )

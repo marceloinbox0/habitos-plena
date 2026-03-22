@@ -15,6 +15,31 @@
   --text-muted: rgba(238,242,255,0.4);
   --accent: #3b82f6;
   --accent-light: #60a5fa;
+
+  /* Card specific */
+  --card-bg: rgba(255,255,255,0.03);
+  --card-border: rgba(255,255,255,0.06);
+  --card-border-hover: rgba(255,255,255,0.1);
+  --card-bg-done: rgba(255,255,255,0.05);
+  --card-bg-done-border: rgba(255,255,255,0.09);
+  
+  --card-text-primary: #fff;
+  --card-text-secondary: rgba(255,255,255,0.4);
+  --card-text-secondary2: rgba(255,255,255,0.45);
+  --card-text-tertiary: rgba(255,255,255,0.22);
+  --card-text-tertiary2: rgba(255,255,255,0.35);
+  
+  --card-btn-hover-bg: rgba(255,255,255,0.07);
+  --card-btn-hover-text: rgba(255,255,255,0.7);
+
+  --card-badge-bg: rgba(255,255,255,0.05);
+  --card-badge-border: rgba(255,255,255,0.07);
+
+  --card-xp-bg: rgba(245,158,11,0.08);
+  --card-xp-text: #fbbf24;
+  --card-xp-border: rgba(245,158,11,0.15);
+
+  --card-dot-bg: rgba(255,255,255,0.07);
 }
 
 html, body, #root {
@@ -45,7 +70,7 @@ body {
 
 /* ── Header ────────────────────────────── */
 .header {
-  padding: 2.5rem 1.25rem 1.25rem;
+  padding: calc(1.5rem + env(safe-area-inset-top, 1rem)) 1.25rem 1.25rem;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -435,3 +460,145 @@ body {
   margin-top: 1rem;
   font-weight: 500;
 }
+
+/* ── Light Theme ───────────────── */
+:root[data-theme='light'] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.1);
+  --border-hover: rgba(0,0,0,0.18);
+  --text: #0f172a;
+  --text-muted: rgba(15,23,42,0.6);
+  --accent: #2563eb;
+  --accent-light: #3b82f6;
+
+  /* Card specific */
+  --card-bg: #ffffff;
+  --card-border: rgba(0,0,0,0.08);
+  --card-border-hover: rgba(0,0,0,0.15);
+  --card-bg-done: #f8fafc;
+  --card-bg-done-border: rgba(0,0,0,0.12);
+  
+  --card-text-primary: #0f172a;
+  --card-text-secondary: rgba(15,23,42,0.55);
+  --card-text-secondary2: rgba(15,23,42,0.6);
+  --card-text-tertiary: rgba(15,23,42,0.4);
+  --card-text-tertiary2: rgba(15,23,42,0.45);
+
+  --card-btn-hover-bg: rgba(0,0,0,0.05);
+  --card-btn-hover-text: #0f172a;
+
+  --card-badge-bg: #f1f5f9;
+  --card-badge-border: rgba(0,0,0,0.05);
+
+  --card-xp-bg: rgba(245,158,11,0.1);
+  --card-xp-text: #b45309; /* darker orange for legibility */
+  --card-xp-border: rgba(245,158,11,0.2);
+
+  --card-dot-bg: #e2e8f0;
+}
+
+:root[data-theme='light'] .success-bg {
+  background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 100%);
+  box-shadow: inset 0 0 100px rgba(16, 185, 129, 0.08);
+}
+
+:root[data-theme='light'] .header {
+  background: rgba(248, 250, 252, 0.9);
+}
+
+:root[data-theme='light'] .milestone-overlay {
+  background: rgba(248, 250, 252, 0.85);
+}
+
+:root[data-theme='light'] .milestone-card {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1), 0 0 20px rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+:root[data-theme='light'] .xp-count {
+  color: rgba(0,0,0,0.45);
+}
+
+/* ── Settings Modal ───────────────── */
+.settings-section {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.settings-section h3 {
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.settings-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface);
+}
+
+.settings-option:hover {
+  border-color: var(--border-hover);
+}
+
+.settings-option.active {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.settings-option input[type="radio"] {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+.settings-option span {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.settings-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+}
+
+.settings-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.settings-checkbox span {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
