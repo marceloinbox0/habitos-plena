@@ -31,7 +31,11 @@ function getExpectedHabitsForDate(dateStr, habits, daysOff, dayOffHabits) {
     if (h.archived && h.archived_at && formatDateLocal(h.archived_at) <= dateStr) return false
     
     // Se é dia de folga e não foi selecionado
-    if (isDayOff && dayOffHabits && !dayOffHabits.includes(h.id)) return false
+    if (isDayOff && dayOffHabits) {
+      if (dayOfWeek === 6 && dayOffHabits.saturday && !dayOffHabits.saturday.includes(h.id)) return false
+      if (dayOfWeek === 0 && dayOffHabits.sunday && !dayOffHabits.sunday.includes(h.id)) return false
+      if (Array.isArray(dayOffHabits) && !dayOffHabits.includes(h.id)) return false
+    }
     
     return true
   })

@@ -194,7 +194,11 @@ export function useHabits(userId, daysOff = { saturday: false, sunday: false }, 
       if (h.archived && h.archived_at && formatDateLocal(h.archived_at) <= dateStr) return false
       
       // Se é dia de folga e não foi selecionado
-      if (isDayOff && !dayOffHabits.includes(h.id)) return false
+      if (isDayOff) {
+        if (dayOfWeek === 6 && dayOffHabits?.saturday && !dayOffHabits.saturday.includes(h.id)) return false
+        if (dayOfWeek === 0 && dayOffHabits?.sunday && !dayOffHabits.sunday.includes(h.id)) return false
+        if (Array.isArray(dayOffHabits) && !dayOffHabits.includes(h.id)) return false
+      }
       
       return true
     })
@@ -260,7 +264,14 @@ export function useHabits(userId, daysOff = { saturday: false, sunday: false }, 
 
   const activeHabits = habits.filter(h => !h.archived)
   const applicableHabitsToday = isTodayDayOff 
-    ? activeHabits.filter(h => dayOffHabits.includes(h.id))
+    ? activeHabits.filter(h => {
+        const d = new Date()
+        const dayOfWeek = d.getDay()
+        if (dayOfWeek === 6 && dayOffHabits?.saturday) return dayOffHabits.saturday.includes(h.id)
+        if (dayOfWeek === 0 && dayOffHabits?.sunday) return dayOffHabits.sunday.includes(h.id)
+        if (Array.isArray(dayOffHabits)) return dayOffHabits.includes(h.id)
+        return false
+      })
     : activeHabits;
 
   const totalDailyXP = applicableHabitsToday.reduce((sum, h) => sum + (h.xp || 10), 0)
@@ -305,7 +316,9 @@ export function useHabits(userId, daysOff = { saturday: false, sunday: false }, 
 
         // Se é um dia de folga, cobramos apenas os hábitos selecionados para a rotina de folga (se houver seleção)
         if (isDayOff) {
-          if (!dayOffHabits.includes(h.id)) return false
+          if (dayOfWeek === 6 && dayOffHabits?.saturday && !dayOffHabits.saturday.includes(h.id)) return false
+          if (dayOfWeek === 0 && dayOffHabits?.sunday && !dayOffHabits.sunday.includes(h.id)) return false
+          if (Array.isArray(dayOffHabits) && !dayOffHabits.includes(h.id)) return false
         }
         
         return true

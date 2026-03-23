@@ -28,9 +28,9 @@ export default function App() {
   const [settings, setSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('vidaplena_settings')
-      return saved ? JSON.parse(saved) : { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: [] }
+      return saved ? JSON.parse(saved) : { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: { saturday: [], sunday: [] } }
     } catch {
-      return { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: [] }
+      return { theme: 'system', daysOff: { saturday: false, sunday: false }, dayOffHabits: { saturday: [], sunday: [] } }
     }
   })
 
@@ -88,7 +88,16 @@ export default function App() {
   const habitsToRender = habits.filter(h => {
     if (h.archived) return false
     if (isTodayDayOff) {
-      return settings.dayOffHabits?.includes(h.id)
+      const dayOfWeek = new Date().getDay()
+      if (dayOfWeek === 6 && settings.dayOffHabits?.saturday) {
+        return settings.dayOffHabits.saturday.includes(h.id)
+      }
+      if (dayOfWeek === 0 && settings.dayOffHabits?.sunday) {
+        return settings.dayOffHabits.sunday.includes(h.id)
+      }
+      if (Array.isArray(settings.dayOffHabits)) {
+        return settings.dayOffHabits.includes(h.id)
+      }
     }
     return true
   })

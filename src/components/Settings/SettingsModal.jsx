@@ -3,7 +3,11 @@ import { useState, useEffect } from 'react'
 export default function SettingsModal({ onClose, settings, onSave, habits = [], onUnarchive, onDelete }) {
   const [theme, setTheme] = useState(settings.theme || 'system')
   const [daysOff, setDaysOff] = useState(settings.daysOff || { saturday: false, sunday: false })
-  const [dayOffHabits, setDayOffHabits] = useState(settings.dayOffHabits || [])
+  const [dayOffHabits, setDayOffHabits] = useState(
+    Array.isArray(settings.dayOffHabits) 
+      ? { saturday: settings.dayOffHabits, sunday: settings.dayOffHabits }
+      : (settings.dayOffHabits || { saturday: [], sunday: [] })
+  )
   const [showInactive, setShowInactive] = useState(false)
   const [showDayOffHabits, setShowDayOffHabits] = useState(false)
 
@@ -77,26 +81,60 @@ export default function SettingsModal({ onClose, settings, onSave, habits = [], 
 
                 {showDayOffHabits && (
                   <div style={{ marginTop: '1rem' }}>
-                    <p className="settings-hint">Quais destes hábitos ativos vão aparecer no seu dia de folga?</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                       {activeHabits.map(h => (
-                          <label key={h.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
-                             <input 
-                                type="checkbox" 
-                                style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
-                                checked={dayOffHabits.includes(h.id)} 
-                                onChange={(e) => {
-                                   if (e.target.checked) setDayOffHabits([...dayOffHabits, h.id])
-                                   else setDayOffHabits(dayOffHabits.filter(id => id !== h.id))
-                                }} 
-                             />
-                             <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
-                                <span style={{ fontSize: '1.1rem', marginRight: '4px' }}>{h.emoji}</span> 
-                                {h.name}
-                             </span>
-                          </label>
-                       ))}
-                    </div>
+                    <p className="settings-hint">Quais testes hábitos ativos vão aparecer nos seus dias de folga?</p>
+                    
+                    {daysOff.saturday && (
+                      <div style={{ marginBottom: daysOff.sunday ? '1.5rem' : '0' }}>
+                        <h5 style={{ margin: '0 0 0.8rem 0', color: 'var(--text)', fontSize: '0.9rem' }}>🏖️ Sábado</h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                           {activeHabits.map(h => (
+                              <label key={`sat-${h.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                                 <input 
+                                    type="checkbox" 
+                                    style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
+                                    checked={dayOffHabits.saturday?.includes(h.id) || false} 
+                                    onChange={(e) => {
+                                       const current = dayOffHabits.saturday || []
+                                       if (e.target.checked) setDayOffHabits({ ...dayOffHabits, saturday: [...current, h.id] })
+                                       else setDayOffHabits({ ...dayOffHabits, saturday: current.filter(id => id !== h.id) })
+                                    }} 
+                                 />
+                                 <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
+                                    <span style={{ fontSize: '1.1rem', marginRight: '4px' }}>{h.emoji}</span> 
+                                    {h.name}
+                                 </span>
+                              </label>
+                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {daysOff.sunday && (
+                      <div>
+                        <h5 style={{ margin: '0 0 0.8rem 0', color: 'var(--text)', fontSize: '0.9rem' }}>🏖️ Domingo</h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                           {activeHabits.map(h => (
+                              <label key={`sun-${h.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}>
+                                 <input 
+                                    type="checkbox" 
+                                    style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
+                                    checked={dayOffHabits.sunday?.includes(h.id) || false} 
+                                    onChange={(e) => {
+                                       const current = dayOffHabits.sunday || []
+                                       if (e.target.checked) setDayOffHabits({ ...dayOffHabits, sunday: [...current, h.id] })
+                                       else setDayOffHabits({ ...dayOffHabits, sunday: current.filter(id => id !== h.id) })
+                                    }} 
+                                 />
+                                 <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
+                                    <span style={{ fontSize: '1.1rem', marginRight: '4px' }}>{h.emoji}</span> 
+                                    {h.name}
+                                 </span>
+                              </label>
+                           ))}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 )}
              </div>
