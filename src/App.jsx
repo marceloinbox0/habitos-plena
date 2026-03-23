@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useHabits } from './hooks/useHabits'
 import { useAuth } from './hooks/useAuth'
+import { supabase } from './lib/supabase'
 import HabitCard from './components/HabitCard'
 import HabitForm from './components/HabitForm'
 import AuthPage from './components/Auth/AuthPage'
@@ -53,11 +54,30 @@ export default function App() {
   }, [settings])
 
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+
+  useEffect(() => {
+    if (user?.user_metadata?.settings) {
+      setSettings(prev => ({ ...prev, ...user.user_metadata.settings }))
+    }
+  }, [user])
+
   const { 
     habits, loading: habitsLoading, addHabit, editHabit, deleteHabit, archiveHabit, unarchiveHabit, toggleToday, 
     todayXP, totalDailyXP, dailyProgressXP, habitsDoneCount, performanceLevel, consistencyScore, 
     completions, summaries, finalizeDay, getTodayKey, isTodayFinalized 
   } = useHabits(user?.id, settings.daysOff, settings.dayOffHabits)
+
+  const handleSaveSettings = async (newSettings) => {
+    setSettings(newSettings)
+    if (user) {
+      const { error } = await supabase.auth.updateUser({
+        data: { settings: newSettings }
+      })
+      if (error) {
+        console.error('Erro ao sincronizar configurações na nuvem:', error)
+      }
+    }
+  }
 
   const isTodayDayOff = (() => {
     const d = new Date()
@@ -316,7 +336,7 @@ export default function App() {
         <SettingsModal
           settings={settings}
           onClose={() => setShowSettings(false)}
-          onSave={setSettings}
+          onSave={handleSaveSettings}
           habits={habits}
           onUnarchive={unarchiveHabit}
           onDelete={deleteHabit}
