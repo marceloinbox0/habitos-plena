@@ -1,0 +1,10 @@
+python-telegram-bot>=20.8
+google-api-python-client
+google-auth-oauthlib
+python-dotenv
+pytz
+apscheduler
+requests
+google-generativeai
+youtube-transcript-api
+httpx

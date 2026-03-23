@@ -31,7 +31,8 @@ dist-ssr
 .env.*
 
 # Custom folders
-assistente-bot/
+assistente-bot/credentials.json
+assistente-bot/token.json
 antigravity-awesome-skills/
 GitHub_Repo_Folder/
 .venv/
