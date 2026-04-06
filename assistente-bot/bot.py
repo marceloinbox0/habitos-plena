@@ -554,16 +554,36 @@ async def send_daily_agenda(context: ContextTypes.DEFAULT_TYPE):
     )
     
     events = events_result.get("items", [])
+    
+    date_str = target_date.strftime("%d/%m/%Y")
+    weekday_map = {
+        0: "Segunda-feira", 1: "Terça-feira", 2: "Quarta-feira",
+        3: "Quinta-feira", 4: "Sexta-feira", 5: "Sábado", 6: "Domingo"
+    }
+    weekday = weekday_map[target_date.weekday()]
+
     if not events:
-        msg = f"🌙 <b>Boa noite!</b>\nAmanhã você não tem nada antes das 14h. Aproveite! 😌"
+        msg = (
+            f"🌙 <b>Boa noite!</b>\n\n"
+            f"📅 Amanhã é <b>{weekday}, {date_str}</b>\n\n"
+            f"✅ Você <b>não tem compromissos</b> antes das 14h.\n"
+            f"Pode descansar com tranquilidade! 😌"
+        )
     else:
-        msg = f"🌙 <b>Boa noite!</b>\nAmanhã você tem {len(events)} compromissos antes das 14h:\n"
+        lines = [
+            f"🌙 <b>Boa noite!</b>\n",
+            f"📅 Amanhã é <b>{weekday}, {date_str}</b>\n",
+            f"⚠️ Você tem <b>{len(events)} compromisso(s)</b> antes das 14h:\n"
+        ]
         for e in events:
             start_time = e['start'].get('dateTime', "Dia todo")
             if 'T' in start_time:
                 start_time = datetime.fromisoformat(start_time).astimezone(TIMEZONE).strftime("%H:%M")
-            msg += f"• 🕐 <b>{start_time}</b> — {e.get('summary')}\n"
+            lines.append(f"  • 🕐 <b>{start_time}</b> — {e.get('summary', 'Sem título')}")
             
+        lines.append("\nDurma bem e prepare-se! 💪")
+        msg = "\n".join(lines)
+        
     await context.bot.send_message(chat_id=CHAT_ID, text=msg, parse_mode=ParseMode.HTML)
 
 async def send_weekly_report(context: ContextTypes.DEFAULT_TYPE):
