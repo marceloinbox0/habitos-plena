@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import styles from './HistoryView.module.css'
 
 function formatDateLocal(date) {
@@ -73,7 +73,9 @@ function getDailyStats(habits = [], completions = [], summaries = [], daysOff = 
       const dayOfWeek = new Date(dateStr + "T12:00:00").getDay()
       const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
 
-      percentage = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff ? 100 : 0)
+      // Só conta como dia de folga válido se havia hábitos cadastrados nessa data
+      const hadHabits = (habits || []).some(h => !h.created_at || formatDateLocal(h.created_at) <= dateStr)
+      percentage = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff && hadHabits ? 100 : 0)
     }
       
     stats.push({
@@ -134,14 +136,37 @@ function LineChart({ data = [] }) {
   )
 }
 
-function Calendar({ habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [] }) {
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+
+function Calendar({ habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [], minMonth = null }) {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth()
+
+  // offset em meses em relação ao mês atual (0 = agora, -1 = mês passado…)
+  const [offset, setOffset] = useState(0)
+
+  const viewDate = new Date(currentYear, currentMonth + offset, 1)
+  const year = viewDate.getFullYear()
+  const month = viewDate.getMonth()
+
+  // Mês mínimo navegável
+  const minDate = minMonth ? new Date(minMonth + '-01') : new Date(currentYear, currentMonth, 1)
+  const minYear = minDate.getFullYear()
+  const minMon = minDate.getMonth()
+
+  const canGoPrev = year > minYear || (year === minYear && month > minMon)
+  const canGoNext = offset < 0  // só pode avançar se não está no mês atual
+
+  // Quantos dias do mês já passaram (incluindo hoje)
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const isCurrentMonth = year === currentYear && month === currentMonth
+  const daysPassed = isCurrentMonth
+    ? now.getDate()       // hoje incluído
+    : daysInMonth         // mês passado = todos os dias passaram
+  const percentElapsed = Math.round((daysPassed / daysInMonth) * 100)
+
   const firstDay = new Date(year, month, 1).getDay()
-  
   const calendarDays = []
   for (let i = 0; i < firstDay; i++) calendarDays.push(null)
   for (let i = 1; i <= daysInMonth; i++) calendarDays.push(i)
@@ -150,19 +175,43 @@ function Calendar({ habits = [], completions = [], summaries = [], daysOff = {},
 
   return (
     <div className={styles.calendar}>
+      {/* Cabeçalho de navegação */}
+      <div className={styles.calMonthNav}>
+        <button
+          className={styles.calNavBtn}
+          onClick={() => setOffset(o => o - 1)}
+          disabled={!canGoPrev}
+          aria-label="Mês anterior"
+        >‹</button>
+
+        <div className={styles.calMonthInfo}>
+          <span className={styles.calMonthName}>{MONTH_NAMES[month]} {year}</span>
+          <span className={styles.calElapsed}>{percentElapsed}% dos dias passados</span>
+        </div>
+
+        <button
+          className={styles.calNavBtn}
+          onClick={() => setOffset(o => o + 1)}
+          disabled={!canGoNext}
+          aria-label="Próximo mês"
+        >›</button>
+      </div>
+
+      {/* Labels dos dias da semana */}
       <div className={styles.calendarHeader}>
-        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map(d => (
-          <span key={d} className={styles.calDayLabel}>{d}</span>
+        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+          <span key={i} className={styles.calDayLabel}>{d}</span>
         ))}
       </div>
+
       <div className={styles.calendarGrid}>
         {calendarDays.map((day, i) => {
           if (!day) return <div key={`empty-${i}`} className={styles.calDayEmpty} />
-          
+
           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-          const isPast = dateStr < todayStr
           const isToday = dateStr === todayStr
-          
+          const isFuture = dateStr > todayStr
+
           const saved = (summaries || []).find(s => s.summary_date === dateStr)
           let percent = 0
           let hasData = false
@@ -176,27 +225,29 @@ function Calendar({ habits = [], completions = [], summaries = [], daysOff = {},
             const totalXPEarned = (completions || [])
               .filter(c => c.completed_date === dateStr)
               .reduce((acc, c) => acc + (Number(c.xp_earned) || 0), 0)
-            
-            const dayOfWeek = new Date(dateStr + "T12:00:00").getDay()
+
+            const dayOfWeek = new Date(dateStr + 'T12:00:00').getDay()
             const isDayOff = (dayOfWeek === 6 && daysOff?.saturday) || (dayOfWeek === 0 && daysOff?.sunday)
 
-            percent = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff ? 100 : 0)
-            hasData = totalXPExpected > 0 || isDayOff
+            // Só conta como dia de folga válido se havia hábitos cadastrados nessa data
+            const hadHabits = (habits || []).some(h => !h.created_at || formatDateLocal(h.created_at) <= dateStr)
+            percent = totalXPExpected > 0 ? Math.round((totalXPEarned / totalXPExpected) * 100) : (isDayOff && hadHabits ? 100 : 0)
+            hasData = totalXPExpected > 0 || (isDayOff && hadHabits)
           }
 
-          const showPercent = dateStr <= todayStr && day >= 15
+          const showBar = !isFuture && hasData
 
           let statusClass = ''
-          if (percent >= 90) statusClass = styles.calSuccess
-          else if (percent >= 80) statusClass = styles.calWarning
+          if (!isFuture && percent >= 90) statusClass = styles.calSuccess
+          else if (!isFuture && percent >= 80) statusClass = styles.calWarning
 
           return (
-            <div 
-              key={day} 
-              className={`${styles.calDay} ${isToday ? styles.calToday : ''} ${statusClass}`}
+            <div
+              key={day}
+              className={`${styles.calDay} ${isToday ? styles.calToday : ''} ${isFuture ? styles.calFuture : ''} ${statusClass}`}
             >
               <span className={styles.calDayNum}>{day}</span>
-              {showPercent && hasData && (
+              {showBar && (
                 <div className={styles.calPercentBar}>
                   <div className={styles.calPercentFill} style={{ width: `${Math.min(100, percent)}%` }} />
                 </div>
@@ -290,6 +341,16 @@ function CoachSection({ habits = [], completions = [], summaries = [], last7Days
 export default function HistoryView({ habits = [], completions = [], summaries = [], daysOff = {}, dayOffHabits = [] }) {
   const last7Days = useMemo(() => getDailyStats(habits, completions, summaries, daysOff, dayOffHabits, 7), [habits, completions, summaries, daysOff, dayOffHabits])
 
+  // Mês mínimo navegável: mês do registro mais antigo (completion ou summary)
+  const minMonth = useMemo(() => {
+    const dates = [
+      ...(completions || []).map(c => c.completed_date),
+      ...(summaries || []).map(s => s.summary_date),
+    ].filter(Boolean).sort()
+    if (dates.length === 0) return null
+    return dates[0].slice(0, 7) // 'YYYY-MM'
+  }, [completions, summaries])
+
   return (
     <div className={styles.container}>
       <section className={styles.section}>
@@ -304,7 +365,14 @@ export default function HistoryView({ habits = [], completions = [], summaries =
 
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>Calendário Mensal</h3>
-        <Calendar habits={habits} completions={completions} summaries={summaries} daysOff={daysOff} dayOffHabits={dayOffHabits} />
+        <Calendar
+          habits={habits}
+          completions={completions}
+          summaries={summaries}
+          daysOff={daysOff}
+          dayOffHabits={dayOffHabits}
+          minMonth={minMonth}
+        />
       </section>
     </div>
   )

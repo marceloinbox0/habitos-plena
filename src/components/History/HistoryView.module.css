@@ -76,6 +76,60 @@
   width: 100%;
 }
 
+/* Linha de navegação de meses */
+.calMonthNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.calNavBtn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border-radius: 8px;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calNavBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.calNavBtn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.calMonthInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.calMonthName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.calElapsed {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
 .calendarHeader {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -126,6 +180,10 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
+}
+
+.calFuture {
+  opacity: 0.3;
 }
 
 .calDayEmpty {
